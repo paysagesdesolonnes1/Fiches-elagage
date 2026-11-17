@@ -73,6 +73,10 @@ input:focus,textarea:focus{outline:2px solid var(--g);border-color:transparent}
 .ro .chip{pointer-events:none}
 .ro input,.ro textarea{background:#f7f8f6;color:var(--ink);opacity:1;-webkit-text-fill-color:var(--ink)}
 .badge.warnb{background:#fde2e0;color:var(--red)}
+.pol h3{font-size:15px;margin:16px 0 6px;color:var(--g)}
+.pol p,.pol li{font-size:14px;line-height:1.5}
+.pol ul{padding-left:20px;margin:6px 0}
+.plink{display:block;text-align:center;margin:14px 0 4px;font-size:13px;color:var(--g)}
 .sync{flex:1;align-self:center;font-size:12px;color:var(--mut);max-width:140px;line-height:1.2}
 .sync.ok{color:var(--g)}
 .sync.err{color:var(--red)}
@@ -107,15 +111,56 @@ input:focus,textarea:focus{outline:2px solid var(--g);border-color:transparent}
       <div class="f"><label>Code d'équipe</label><input type="text" id="codeIn" autocomplete="off" autocapitalize="off"></div>
       <button class="btn p" id="loginBtn" style="width:100%;margin-top:14px">Entrer</button>
       <div class="err" id="loginErr"></div>
-    </div></div>
+    </div><a class="plink" href="#confidentialite">Politique de confidentialité</a></div>
   </section>
   <section id="listView" class="hide">
     <button class="btn p" id="newBtn" style="width:100%;margin-bottom:10px">+ Nouvelle fiche</button>
     <div class="tools"><input type="text" id="search" placeholder="Rechercher un client, une adresse…"><select id="filter"><option value="">Toutes</option><option>Brouillon</option><option>Signée</option><option>Terminée</option></select><button class="btn s" id="refreshBtn" title="Actualiser">↻</button></div>
     <div class="card list" id="list"></div>
     <p class="comp">Fiche obligatoire pour chaque chantier d'élagage (décret n° 2021-1833). À présenter à l'équipe, à garder sur le chantier, à conserver 2 ans.</p>
+    <a class="plink" href="#confidentialite">Politique de confidentialité</a>
   </section>
   <section id="formView" class="hide"></section>
+  <section id="privacyView" class="hide">
+    <div class="card" style="padding:18px 16px">
+      <h2 style="margin:0 0 4px;font-size:19px">Politique de confidentialité</h2>
+      <p class="comp" style="margin:0 0 12px">Fiches d'intervention élagage – mise à jour le 17 novembre 2026</p>
+      <div class="pol">
+      <h3>1. Qui est responsable de vos données ?</h3>
+      <p>SARL Paysages des Olonnes, 4413 route de la Caraillère, La Petite Caraillère, 85440 Grosbreuil – SIRET 490 582 970 00029.<br>Contact : contact@paysagesdesolonnes.fr – 02 51 20 73 41.</p>
+      <h3>2. Pourquoi ces données sont-elles collectées ?</h3>
+      <ul>
+        <li><b>Respecter une obligation légale</b> : la fiche d'intervention est obligatoire avant tout chantier d'élagage ou d'abattage (décret n° 2021-1833). Elle sert à organiser la sécurité du chantier et les secours.</li>
+        <li><b>Exécuter les travaux commandés</b> : préparation et suivi du chantier, accord du client, réception des travaux.</li>
+        <li><b>Conserver une preuve</b> de l'intervention en cas de contrôle, de litige ou de sinistre.</li>
+      </ul>
+      <p>Ces données ne servent ni à la prospection commerciale ni à aucune autre fin, et ne sont jamais vendues.</p>
+      <h3>3. Quelles données ?</h3>
+      <ul>
+        <li><b>Client</b> : nom ou raison sociale, téléphone, e-mail, adresse du chantier, coordonnées GPS éventuelles, remarques, signatures.</li>
+        <li><b>Chantier</b> : description des arbres et des travaux, photos et croquis du site, autorisations et déclarations (DT-DICT…).</li>
+        <li><b>Intervenants</b> : nom, fonction, formations et habilitations, signatures de prise de connaissance.</li>
+      </ul>
+      <p>Les photos du site ne doivent pas montrer de personnes ni de plaques d'immatriculation reconnaissables.</p>
+      <h3>4. Qui y a accès ?</h3>
+      <ul>
+        <li>Les cogérants et l'équipe de Paysages des Olonnes, au moyen d'un code d'accès réservé.</li>
+        <li>Sur demande, les autorités de contrôle (inspection du travail, MSA) et, en cas de sinistre, notre assureur.</li>
+        <li>Nos prestataires techniques, qui hébergent les données sans pouvoir les utiliser pour leur compte : Google (Google Sheets et Google Drive) pour le stockage des fiches et des PDF, GitHub pour l'hébergement de la page, qui ne contient aucune donnée.</li>
+      </ul>
+      <p>Google peut traiter des données hors de l'Union européenne. Ces transferts sont encadrés par les garanties prévues par le RGPD (décision d'adéquation ou clauses contractuelles types de la Commission européenne).</p>
+      <h3>5. Combien de temps ?</h3>
+      <p>La fiche et son PDF sont conservés <b>5 ans</b> après la fin du chantier (au minimum 2 ans exigés par la réglementation, prolongés pour couvrir le délai de prescription en cas de litige), puis supprimés. Un brouillon non envoyé reste uniquement sur le téléphone qui l'a saisi jusqu'à son envoi ou son abandon.</p>
+      <h3>6. Sécurité</h3>
+      <p>Accès protégé par un code d'équipe, échanges chiffrés (HTTPS), stockage dans un compte Google professionnel réservé à l'entreprise. Une fiche terminée ne peut plus être modifiée.</p>
+      <h3>7. Vos droits</h3>
+      <p>Vous pouvez demander l'accès à vos données, leur rectification, leur effacement ou la limitation de leur traitement, et vous opposer à leur traitement. Certaines données doivent toutefois être conservées pendant la durée légale : nous vous l'indiquerons le cas échéant. Écrivez à <b>contact@paysagesdesolonnes.fr</b> ; nous répondons sous un mois.</p>
+      <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (www.cnil.fr).</p>
+      </div>
+      <button class="btn s" id="privBack" style="width:100%;margin-top:14px">← Retour</button>
+    </div>
+  </section>
+
 </main>
 <div class="bar hide" id="bar">
   <span class="sync" id="sync"></span>
@@ -212,6 +257,7 @@ const S = [
  ]},
  {t:"Signatures avant travaux", f:[
   {k:"sig_ent",l:"Chef d'entreprise / représentant",ty:"sig",req:1},
+  {k:"_info_rgpd",ty:"info",h:"Avant de signer, informez le client : ses données servent uniquement à la sécurité et au suivi du chantier (fiche obligatoire), sont conservées 5 ans et il peut exercer ses droits auprès de contact@paysagesdesolonnes.fr. <a href=\"#confidentialite\">Lire la politique de confidentialité</a>."},
   {k:"sig_client",l:"Client (lu et approuvé)",ty:"sig"},
   {k:"equipe_sig",l:"Prise de connaissance par l'équipe",ty:"sigs"},
   {k:"jourj",l:"Vérification sur place le jour J",ty:"chips1",o:["Conforme à la fiche","Fiche modifiée – équipe prévenue"]}
@@ -253,7 +299,7 @@ function blank(){const o={ref:newRef(),arbres:[{}],equipe_sig:[]};S.forEach(s=>s
 function status(d){if(d.sig_fin)return"Terminée";if(d.sig_ent)return"Signée";return"Brouillon"}
 const badgeCls={"Terminée":"fin","Signée":"sig","Brouillon":""};
 function secDone(s){return s.f.filter(f=>f.req).every(f=>{const v=D[f.k];return Array.isArray(v)?v.length:!!v})}
-function show(v){["#loginView","#listView","#formView"].forEach(x=>$(x).classList.toggle("hide",x!==v));$("#bar").classList.toggle("hide",v!=="#formView");$("#backBtn").classList.toggle("hide",v!=="#formView");$("#outBtn").classList.toggle("hide",v!=="#listView");window.scrollTo(0,0)}
+function show(v){["#loginView","#listView","#formView","#privacyView"].forEach(x=>$(x).classList.toggle("hide",x!==v));$("#bar").classList.toggle("hide",v!=="#formView");$("#backBtn").classList.toggle("hide",v!=="#formView");$("#outBtn").classList.toggle("hide",v!=="#listView");window.scrollTo(0,0)}
 
 /* ---------- CONNEXION ---------- */
 function showLogin(err){
@@ -444,6 +490,10 @@ function buildPdf(){
     });
   });
   y+=3;txt("Fiche établie selon le décret n° 2021-1833 (modèle MSA). À présenter à l'équipe, à conserver sur le chantier puis 2 ans après signature.",8,"italic",[110,110,110]);
+  y+=3;need(30);doc.setDrawColor(200);doc.line(M,y,W-M,y);y+=5;
+  txt("Protection des données personnelles",10,"bold",[47,107,58]);y+=1;
+  txt("Les données de cette fiche (identité et coordonnées du client, adresse du chantier, photos du site, noms et signatures) sont traitées par SARL Paysages des Olonnes (4413 route de la Caraillère, 85440 Grosbreuil), responsable de traitement, pour respecter l'obligation de fiche d'intervention (décret n° 2021-1833), organiser la sécurité du chantier, exécuter les travaux et en conserver la preuve. Elles sont accessibles à l'équipe, aux autorités de contrôle sur demande et à notre assureur en cas de sinistre, et hébergées par Google (Sheets, Drive). Elles sont conservées 5 ans après la fin du chantier puis supprimées. Vous pouvez demander l'accès, la rectification, l'effacement ou la limitation de vos données, ou vous opposer à leur traitement, en écrivant à contact@paysagesdesolonnes.fr. Réclamation possible auprès de la CNIL (www.cnil.fr).",8,"normal",[70,70,70]);
+  txt("Politique complète : "+location.href.split("#")[0]+"#confidentialite",8,"normal",[47,107,58]);
   const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(140);doc.text(`${ENT.nom} - ${clean(D.ref||"")} - page ${i}/${n}`,M,292)}
   return doc;
 }
@@ -462,6 +512,22 @@ $("#pdfDl").onclick=()=>{$("#pdfMenu").classList.remove("v");const blob=buildPdf
 $("#pdfDrive").onclick=async()=>{$("#pdfMenu").classList.remove("v");if(dirty&&!RO){toast("Enregistrez d'abord vos modifications");return}busy(1,"Envoi du PDF dans le Drive…");try{await sendPdf();busy(0)}catch(e){busy(0);errToast(e)}};
 $("#pdfClose").onclick=()=>$("#pdfMenu").classList.remove("v");
 
+/* ---------- CONFIDENTIALITÉ ---------- */
+let beforePriv=null;
+function routeHash(){
+  if(location.hash==="#confidentialite"){
+    const cur=["#loginView","#listView","#formView"].find(x=>!$(x).classList.contains("hide"));
+    if(cur)beforePriv=cur;
+    $("#bar").classList.add("hide");["#loginView","#listView","#formView"].forEach(x=>$(x).classList.add("hide"));$("#privacyView").classList.remove("hide");$("#backBtn").classList.add("hide");$("#outBtn").classList.add("hide");window.scrollTo(0,0);return true}
+  if(!$("#privacyView").classList.contains("hide")){
+    $("#privacyView").classList.add("hide");
+    const v=beforePriv||(ls.get(LSC)?"#listView":"#loginView");
+    if(v==="#formView"){$("#formView").classList.remove("hide");$("#bar").classList.remove("hide");$("#backBtn").classList.remove("hide")}else if(v==="#loginView")showLogin();else{show("#listView");renderList()}
+  }
+  return false}
+window.addEventListener("hashchange",routeHash);
+$("#privBack").onclick=()=>{if(history.length>1&&beforePriv)history.back();else{history.replaceState(null,"",location.pathname);routeHash()}};
+
 /* ---------- DÉMARRAGE ---------- */
 $("#newBtn").onclick=()=>openForm(null,null,"","Brouillon");
 $("#backBtn").onclick=async()=>{
@@ -477,8 +543,10 @@ document.addEventListener("visibilitychange",async()=>{
 $("#saveBtn").onclick=save;$("#pdfBtn").onclick=pdfMenu;
 window.addEventListener("resize",()=>document.querySelectorAll("canvas.pad").forEach(c=>{if(c._init){fitCanvas(c);drawPad(c)}}));
 (async()=>{
+  const priv=location.hash==="#confidentialite";
+  if(priv){routeHash();if(!apiUrl()||!ls.get(LSC))return;beforePriv="#listView"}
   if(!apiUrl()||!ls.get(LSC)){showLogin();return}
-  show("#listView");$("#list").innerHTML='<div class="empty">Chargement des fiches…</div>';
+  if(!priv)show("#listView");$("#list").innerHTML='<div class="empty">Chargement des fiches…</div>';
   try{await loadList()}catch(e){if(e.code==="code")showLogin("Code incorrect ou modifié.");else{$("#list").innerHTML="";renderList();toast("Pas de réseau : liste indisponible",4000)}}
 })();
 
