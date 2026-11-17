@@ -342,11 +342,22 @@ async function autoSave(){
     setSync("Enregistré ✓","ok");ok=true;
     const d=$("#delBtn");if(d)d.textContent="Supprimer cette fiche";
   }catch(e){
-    if(e.code==="conflit"){setSync("Modifiée sur un autre téléphone","err");errToast(e)}
+    if(e.code==="conflit"){setSync("Modifiée sur un autre téléphone","err");conflict()}
     else if(e.code==="terminee"||e.code==="code"){setSync("","err");errToast(e)}
     else setSync("Hors réseau – gardée sur ce téléphone","err");
   }finally{saving=false;if(pending){pending=false;setTimeout(autoSave,300)}}
   return ok&&!dirty;
+}
+async function reloadCurrent(msg){
+  if(!curId)return;busy(1,"Chargement de la dernière version…");
+  try{const j=await api("get",{id:curId});busy(0);ls.del(LS);openForm(j.id,j.data,j.maj,j.statut);if(msg)toast(msg,3500)}
+  catch(e){busy(0);errToast(e)}
+}
+let conflictOpen=false;
+async function conflict(){
+  if(conflictOpen)return;conflictOpen=true;clearTimeout(autoT);
+  await ask("Cette fiche a été <b>modifiée sur un autre téléphone</b>. La dernière version va être chargée. Vos modifications faites ici depuis le dernier enregistrement ne seront pas gardées : refaites-les si besoin.","Charger");
+  conflictOpen=false;dirty=false;await reloadCurrent("Dernière version chargée");
 }
 function touch(){dirty=true;saveLocal();scheduleAuto();const c=document.querySelector(".card.open");if(c){c.querySelector(".sec-h").classList.toggle("done",secDone(S[+c.dataset.s]))}}
 function bindFields(F){
@@ -390,18 +401,18 @@ function initPads(scope){scope.querySelectorAll("canvas.pad").forEach(c=>{if(c._
 async function save(){
   const willBeDone=status(D)==="Terminée"&&curStatut!=="Terminée";
   if(willBeDone&&!(await ask("La signature de réception est faite : la fiche sera <b>terminée</b> et ne pourra plus être modifiée. Son PDF sera classé dans le Drive. Continuer ?","Terminer")))return;
-  if(!dirty&&curId){toast("Fiche déjà enregistrée ✓");return}
+  if(!dirty&&curId){toast("Fiche enregistrée ✓");clearTimeout(autoT);show("#listView");renderList();loadList().catch(()=>{});return}
   dirty=true;busy(1,"Enregistrement…");
   while(saving)await new Promise(r=>setTimeout(r,200));
   clearTimeout(autoT);
   if(willBeDone){
     try{const j=await api("save",{id:curId,baseMaj:curMaj,data:D});curId=j.id;curMaj=j.maj;curStatut=j.statut;dirty=false;ls.del(LS);
-      busy(1,"Classement du PDF dans le Drive…");await sendPdf(true);busy(0);toast("Fiche terminée et classée ✓");RO=true;renderForm();loadList().catch(()=>{})}
-    catch(e){busy(0);saveLocal();errToast(e)}
+      busy(1,"Classement du PDF dans le Drive…");await sendPdf(true);busy(0);toast("Fiche terminée et classée ✓");RO=true;show("#listView");renderList();loadList().catch(()=>{})}
+    catch(e){busy(0);saveLocal();if(e.code==="conflit")conflict();else errToast(e)}
     return;
   }
   const ok=await autoSave();busy(0);
-  if(ok){toast("Fiche enregistrée ✓");loadList().catch(()=>{})}
+  if(ok){toast("Fiche enregistrée ✓");clearTimeout(autoT);show("#listView");renderList();loadList().catch(()=>{})}
   else if(dirty)toast("Pas enregistrée dans le Sheet : gardée sur ce téléphone. Réessayez avec du réseau.",4500);
 }
 async function delFiche(){
@@ -457,7 +468,12 @@ $("#backBtn").onclick=async()=>{
   if(dirty&&!RO){busy(1,"Enregistrement…");while(saving)await new Promise(r=>setTimeout(r,200));const ok=await autoSave();busy(0);
     if(!ok&&dirty&&!(await ask("Les dernières modifications n'ont pas pu être envoyées. Elles restent en brouillon sur ce téléphone. Revenir à la liste ?","Revenir")))return}
   clearTimeout(autoT);show("#listView");renderList();loadList().catch(()=>{})};
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty&&!RO&&!saving)autoSave()});
+document.addEventListener("visibilitychange",async()=>{
+  if(document.visibilityState==="hidden"){if(dirty&&!RO&&!saving)autoSave();return}
+  if($("#formView").classList.contains("hide")){if(!$("#listView").classList.contains("hide"))loadList().catch(()=>{});return}
+  if(!curId||dirty||saving)return;
+  try{const j=await api("get",{id:curId});if(j.maj!==curMaj&&!dirty){ls.del(LS);openForm(j.id,j.data,j.maj,j.statut);toast("Fiche mise à jour depuis un autre téléphone",3500)}}catch(e){}
+});
 $("#saveBtn").onclick=save;$("#pdfBtn").onclick=pdfMenu;
 window.addEventListener("resize",()=>document.querySelectorAll("canvas.pad").forEach(c=>{if(c._init){fitCanvas(c);drawPad(c)}}));
 (async()=>{
