@@ -73,6 +73,10 @@ input:focus,textarea:focus{outline:2px solid var(--g);border-color:transparent}
 .ro .chip{pointer-events:none}
 .ro input,.ro textarea{background:#f7f8f6;color:var(--ink);opacity:1;-webkit-text-fill-color:var(--ink)}
 .badge.warnb{background:#fde2e0;color:var(--red)}
+.sync{flex:1;align-self:center;font-size:12px;color:var(--mut);max-width:140px;line-height:1.2}
+.sync.ok{color:var(--g)}
+.sync.err{color:var(--red)}
+.item .x{border:0;background:none;color:var(--red);font-size:22px;padding:0 4px}
 .busy{position:fixed;inset:0;background:rgba(255,255,255,.75);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:20;font-weight:600;color:var(--g)}
 .busy.v{display:flex}
 .spin{width:34px;height:34px;border:4px solid var(--g2);border-top-color:var(--g);border-radius:50%;animation:sp 1s linear infinite}
@@ -114,6 +118,7 @@ input:focus,textarea:focus{outline:2px solid var(--g);border-color:transparent}
   <section id="formView" class="hide"></section>
 </main>
 <div class="bar hide" id="bar">
+  <span class="sync" id="sync"></span>
   <button class="btn s" id="pdfBtn">PDF</button>
   <button class="btn p" id="saveBtn">Enregistrer</button>
 </div>
@@ -226,6 +231,7 @@ const S = [
 /* ====== CONFIGURATION ====== */
 const API_URL = "https://script.google.com/macros/s/AKfycbwQoqs4R1jtEVE0wsP4hCPozh9TUqdIrXhWaB4tHt8IAJZVW6-Gh1aStd8ejptsYSKrpQ/exec"; // adresse « /exec » du script Google
 
+let saving=false, pending=false, autoT=null;
 let D={}, curId=null, curMaj="", curStatut="", RO=false, dirty=false, openSec=0, rows=[];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -268,13 +274,14 @@ async function loadList(){const j=await api("list");rows=j.rows||[];renderList()
 function renderList(){
   const L=$("#list");let h="";
   let local=null;try{local=JSON.parse(ls.get(LS)||"null")}catch(e){}
-  if(local&&local.D&&(local.D.client_nom||local.D.adresse)){h+=`<div class="item" data-local="1"><div class="t"><b>${esc(local.D.client_nom||"Sans nom")}</b><span>Brouillon non envoyé, gardé sur ce téléphone</span></div><span class="badge warnb">À envoyer</span></div>`}
+  if(local&&local.D&&(local.D.client_nom||local.D.adresse)){h+=`<div class="item" data-local="1"><div class="t"><b>${esc(local.D.client_nom||"Sans nom")}</b><span>Brouillon non envoyé, gardé sur ce téléphone</span></div><span class="badge warnb">À envoyer</span><button class="x" data-discard="1" title="Abandonner ce brouillon">×</button></div>`}
   const q=($("#search").value||"").toLowerCase();
   const f=$("#filter").value;
   rows.filter(r=>(!f||r.statut===f)&&(!q||(r.client+" "+r.adresse+" "+r.ref).toLowerCase().includes(q))).forEach(r=>{
     const when=r.debut?new Date(r.debut).toLocaleDateString("fr-FR"):"date à définir";
     h+=`<div class="item" data-id="${esc(r.id)}"><div class="t"><b>${esc(r.client||"Sans nom")}</b><span>${esc(when)} · ${esc((r.adresse||"").split("\n")[0])}${r.pdf?" · PDF classé":""}</span></div><span class="badge ${badgeCls[r.statut]||""}">${esc(r.statut)}</span></div>`});
   L.innerHTML=h||'<div class="empty">Aucune fiche. Créez la première avec « Nouvelle fiche ».</div>';
+  L.querySelectorAll("[data-discard]").forEach(b=>b.onclick=async ev=>{ev.stopPropagation();if(await ask("Abandonner ce brouillon gardé sur ce téléphone ? Il sera effacé.","Abandonner")){ls.del(LS);renderList()}});
   L.querySelectorAll(".item").forEach(el=>el.onclick=async()=>{
     if(el.dataset.local){openForm(local.id,local.D,local.maj,"Brouillon");return}
     busy(1,"Ouverture de la fiche…");
@@ -288,6 +295,7 @@ function errToast(e){if(e.code==="code"){ls.del(LSC);showLogin("Le code a chang�
 /* ---------- FORMULAIRE ---------- */
 function openForm(id,data,maj,statut){
   curId=id||null;D=data||blank();curMaj=maj||"";curStatut=statut||"Brouillon";RO=curStatut==="Terminée";dirty=false;openSec=RO?-1:0;
+  clearTimeout(autoT);setSync(curId?"Enregistré ✓":"","ok");
   show("#formView");renderForm();
 }
 function renderForm(){
@@ -296,7 +304,7 @@ function renderForm(){
   if(RO)h+=`<div class="warn" style="margin:0 0 10px"><b>Fiche terminée</b> – consultation seule. Utilisez « PDF » pour la télécharger.</div>`;
   else if(curStatut==="Signée")h+=`<div class="warn" style="margin:0 0 10px">Fiche signée, encore modifiable jusqu'à la réception des travaux (signature du client en fin de chantier).</div>`;
   S.forEach((s,i)=>{h+=`<div class="card ${i===openSec?"open":""}" data-s="${i}"><div class="sec-h ${secDone(s)?"done":""}"><span class="n">${i+1}</span><h2>${s.t}</h2><span class="chev">›</span></div><div class="sec-b">${s.f.map(fieldHTML).join("")}</div></div>`});
-  if(curId&&!RO)h+=`<button class="btn l" id="delBtn" style="color:var(--red)">Supprimer cette fiche</button>`;
+  if(!RO)h+=`<button class="btn l" id="delBtn" style="color:var(--red)">${curId?"Supprimer cette fiche":"Abandonner cette fiche"}</button>`;
   F.innerHTML=h;
   F.querySelectorAll(".sec-h").forEach(el=>el.onclick=()=>{const c=el.parentElement;const was=c.classList.contains("open");F.querySelectorAll(".card").forEach(x=>x.classList.remove("open"));if(!was){c.classList.add("open");openSec=+c.dataset.s;initPads(c);setTimeout(()=>c.scrollIntoView({behavior:"smooth",block:"start"}),50)}else openSec=-1});
   if(RO)F.querySelectorAll("input,textarea").forEach(x=>x.disabled=true);else bindFields(F);
@@ -318,7 +326,29 @@ function fieldHTML(f){
   }
   return"";
 }
-function touch(){dirty=true;saveLocal();const c=document.querySelector(".card.open");if(c){c.querySelector(".sec-h").classList.toggle("done",secDone(S[+c.dataset.s]))}}
+function setSync(t,c){const e=$("#sync");e.textContent=t||"";e.className="sync "+(c||"")}
+function scheduleAuto(){clearTimeout(autoT);setSync("Modifications en attente…");autoT=setTimeout(autoSave,4000)}
+async function autoSave(){
+  clearTimeout(autoT);
+  if(RO||!dirty)return true;
+  if(status(D)==="Terminée"&&curStatut!=="Terminée"){setSync("Appuyez sur Enregistrer pour terminer","err");return false}
+  if(saving){pending=true;return false}
+  saving=true;setSync("Enregistrement…");
+  const snap=JSON.stringify(D);let ok=false;
+  try{
+    const j=await api("save",{id:curId,baseMaj:curMaj,data:D});
+    curId=j.id;curMaj=j.maj;curStatut=j.statut;
+    if(JSON.stringify(D)===snap){dirty=false;ls.del(LS)}else saveLocal();
+    setSync("Enregistré ✓","ok");ok=true;
+    const d=$("#delBtn");if(d)d.textContent="Supprimer cette fiche";
+  }catch(e){
+    if(e.code==="conflit"){setSync("Modifiée sur un autre téléphone","err");errToast(e)}
+    else if(e.code==="terminee"||e.code==="code"){setSync("","err");errToast(e)}
+    else setSync("Hors réseau – gardée sur ce téléphone","err");
+  }finally{saving=false;if(pending){pending=false;setTimeout(autoSave,300)}}
+  return ok&&!dirty;
+}
+function touch(){dirty=true;saveLocal();scheduleAuto();const c=document.querySelector(".card.open");if(c){c.querySelector(".sec-h").classList.toggle("done",secDone(S[+c.dataset.s]))}}
 function bindFields(F){
   F.querySelectorAll("[data-k]").forEach(el=>{
     if(el.classList.contains("chips")){el.onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=el.dataset.k,v=b.dataset.v;
@@ -358,18 +388,25 @@ function initPads(scope){scope.querySelectorAll("canvas.pad").forEach(c=>{if(c._
 
 /* ---------- ENREGISTRER ---------- */
 async function save(){
-  if(!D.client_nom){toast("Indiquez au moins le nom du client");return}
-  const wasDone=curStatut==="Terminée";const willBeDone=status(D)==="Terminée";
-  if(willBeDone&&!wasDone&&!(await ask("La signature de réception est faite : la fiche sera <b>terminée</b> et ne pourra plus être modifiée. Son PDF sera classé dans le Drive. Continuer ?","Terminer")))return;
-  busy(1,"Enregistrement…");
-  try{
-    const j=await api("save",{id:curId,baseMaj:curMaj,data:D});
-    curId=j.id;curMaj=j.maj;curStatut=j.statut;dirty=false;ls.del(LS);
-    if(curStatut==="Terminée"){busy(1,"Classement du PDF dans le Drive…");await sendPdf(true)}
-    busy(0);toast("Fiche enregistrée ✓");RO=curStatut==="Terminée";renderForm();loadList().catch(()=>{});
-  }catch(e){busy(0);saveLocal();if(e.code==="conflit"||e.code==="terminee"||e.code==="code")errToast(e);else toast("Pas de réseau : la fiche est gardée sur ce téléphone. Réessayez plus tard.",4500)}
+  const willBeDone=status(D)==="Terminée"&&curStatut!=="Terminée";
+  if(willBeDone&&!(await ask("La signature de réception est faite : la fiche sera <b>terminée</b> et ne pourra plus être modifiée. Son PDF sera classé dans le Drive. Continuer ?","Terminer")))return;
+  if(!dirty&&curId){toast("Fiche déjà enregistrée ✓");return}
+  dirty=true;busy(1,"Enregistrement…");
+  while(saving)await new Promise(r=>setTimeout(r,200));
+  clearTimeout(autoT);
+  if(willBeDone){
+    try{const j=await api("save",{id:curId,baseMaj:curMaj,data:D});curId=j.id;curMaj=j.maj;curStatut=j.statut;dirty=false;ls.del(LS);
+      busy(1,"Classement du PDF dans le Drive…");await sendPdf(true);busy(0);toast("Fiche terminée et classée ✓");RO=true;renderForm();loadList().catch(()=>{})}
+    catch(e){busy(0);saveLocal();errToast(e)}
+    return;
+  }
+  const ok=await autoSave();busy(0);
+  if(ok){toast("Fiche enregistrée ✓");loadList().catch(()=>{})}
+  else if(dirty)toast("Pas enregistrée dans le Sheet : gardée sur ce téléphone. Réessayez avec du réseau.",4500);
 }
-async function delFiche(){if(!await ask("Supprimer définitivement cette fiche ?","Supprimer"))return;busy(1);try{await api("delete",{id:curId});ls.del(LS);busy(0);toast("Fiche supprimée");await loadList();show("#listView")}catch(e){busy(0);errToast(e)}}
+async function delFiche(){
+  if(!curId){if(!await ask("Abandonner cette fiche ? Ce qui a été saisi sera effacé.","Abandonner"))return;clearTimeout(autoT);dirty=false;ls.del(LS);show("#listView");renderList();return}
+  if(!await ask("Supprimer définitivement cette fiche (pour tout le monde) ?","Supprimer"))return;clearTimeout(autoT);while(saving)await new Promise(r=>setTimeout(r,200));dirty=false;busy(1);try{await api("delete",{id:curId});ls.del(LS);busy(0);toast("Fiche supprimée");await loadList();show("#listView")}catch(e){busy(0);errToast(e)}}
 
 /* ---------- PDF ---------- */
 function clean(s){return String(s??"").replace(/[✓☐→📷]/g,"").replace(/[‘’]/g,"'")}
@@ -416,7 +453,11 @@ $("#pdfClose").onclick=()=>$("#pdfMenu").classList.remove("v");
 
 /* ---------- DÉMARRAGE ---------- */
 $("#newBtn").onclick=()=>openForm(null,null,"","Brouillon");
-$("#backBtn").onclick=async()=>{if(dirty&&!RO&&!(await ask("Les modifications ne sont pas enregistrées dans le Sheet. Elles restent en brouillon sur ce téléphone. Revenir à la liste ?","Revenir")))return;show("#listView");renderList()};
+$("#backBtn").onclick=async()=>{
+  if(dirty&&!RO){busy(1,"Enregistrement…");while(saving)await new Promise(r=>setTimeout(r,200));const ok=await autoSave();busy(0);
+    if(!ok&&dirty&&!(await ask("Les dernières modifications n'ont pas pu être envoyées. Elles restent en brouillon sur ce téléphone. Revenir à la liste ?","Revenir")))return}
+  clearTimeout(autoT);show("#listView");renderList();loadList().catch(()=>{})};
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&dirty&&!RO&&!saving)autoSave()});
 $("#saveBtn").onclick=save;$("#pdfBtn").onclick=pdfMenu;
 window.addEventListener("resize",()=>document.querySelectorAll("canvas.pad").forEach(c=>{if(c._init){fitCanvas(c);drawPad(c)}}));
 (async()=>{
