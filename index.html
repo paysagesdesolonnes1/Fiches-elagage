@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2f6b3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fiches élagage">
+<meta name="robots" content="noindex">
+<title>Fiches élagage – Paysages des Olonnes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--g:#2f6b3a;--g2:#e8f1e9;--ink:#1d2420;--mut:#66706a;--line:#dfe4df;--bg:#f5f6f3;--red:#b3362f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+header{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+header h1{font-size:17px;margin:0;flex:1;line-height:1.2}
+header small{display:block;font-weight:400;opacity:.8;font-size:12px}
+header button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:14px}
+main{max-width:720px;margin:0 auto;padding:12px 12px 120px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.sec-h{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none}
+.sec-h .n{width:28px;height:28px;border-radius:50%;background:var(--g2);color:var(--g);display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.sec-h.done .n{background:var(--g);color:#fff}
+.sec-h h2{font-size:16px;margin:0;flex:1}
+.sec-h .chev{color:var(--mut);transition:transform .2s}
+.card.open .chev{transform:rotate(90deg)}
+.sec-b{display:none;padding:0 16px 16px}
+.card.open .sec-b{display:block}
+.f{margin-top:14px}
+.f>label,.lbl{display:block;font-size:13px;font-weight:600;color:var(--mut);margin-bottom:6px}
+input[type=text],input[type=tel],input[type=email],input[type=date],input[type=datetime-local],input[type=number],textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid #cfd6cf;border-radius:10px;background:#fff;color:var(--ink)}
+textarea{min-height:70px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--g);border-color:transparent}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid #cfd6cf;background:#fff;border-radius:20px;padding:9px 13px;font-size:14px;color:var(--ink);cursor:pointer}
+.chip.on{background:var(--g);border-color:var(--g);color:#fff}
+.chip.on::before{content:"✓ "}
+.info{background:var(--g2);border-radius:10px;padding:12px;font-size:14px;margin-top:12px}
+.info b{color:var(--g)}
+.warn{background:#fdf1e6;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
+.row{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px;position:relative}
+.row .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row .del{position:absolute;top:6px;right:6px;border:0;background:none;color:var(--red);font-size:20px;padding:4px 8px}
+.btn{border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn.p{background:var(--g);color:#fff}
+.btn.s{background:var(--g2);color:var(--g)}
+.btn.l{background:none;color:var(--g);padding:8px 0}
+.pad{border:1px dashed #b8c2b8;border-radius:10px;background:#fff;touch-action:none;width:100%;display:block}
+.padbar{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.padbar button{font-size:13px;padding:7px 11px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;justify-content:center;z-index:6}
+.bar .btn{flex:1;max-width:240px}
+.list .item{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer}
+.list .item:last-child{border-bottom:0}
+.item .t{flex:1}
+.item .t b{display:block}
+.item .t span{font-size:13px;color:var(--mut)}
+.badge{font-size:12px;border-radius:12px;padding:3px 9px;background:#eee;color:#555;white-space:nowrap}
+.badge.sig{background:#fff3d6;color:#8a5a00}
+.badge.fin{background:var(--g2);color:var(--g)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9;max-width:90%;text-align:center}
+.toast.v{opacity:1}
+.empty{padding:24px 16px;color:var(--mut);text-align:center}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:10;padding:16px}
+.modal.v{display:flex}
+.modal .box{background:#fff;border-radius:14px;padding:18px;max-width:420px;width:100%}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.hide{display:none!important}
+.comp{font-size:12px;color:var(--mut)}
+
+.ro .padbar,.ro [data-addtree],.ro [data-addsig],.ro .del{display:none!important}
+.ro .chip{pointer-events:none}
+.ro input,.ro textarea{background:#f7f8f6;color:var(--ink);opacity:1;-webkit-text-fill-color:var(--ink)}
+.badge.warnb{background:#fde2e0;color:var(--red)}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.75);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:20;font-weight:600;color:var(--g)}
+.busy.v{display:flex}
+.spin{width:34px;height:34px;border:4px solid var(--g2);border-top-color:var(--g);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.tools{display:flex;gap:8px;margin-bottom:10px}
+.tools input{flex:1}
+.tools select{font:inherit;padding:10px;border:1px solid #cfd6cf;border-radius:10px;background:#fff}
+.login{max-width:380px;margin:40px auto 0}
+.login .card{padding:20px}
+.err{color:var(--red);font-size:14px;margin-top:10px;min-height:1em}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:12}
+.sheet.v{display:flex}
+.sheet .box{background:#fff;border-radius:16px 16px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));width:100%;max-width:520px;display:flex;flex-direction:column;gap:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Fiches d'intervention élagage<small>SARL Paysages des Olonnes</small></h1>
+  <button id="backBtn" class="hide">← Liste</button>
+  <button id="outBtn" class="hide">Déconnexion</button>
+</header>
+<main>
+  <section id="loginView" class="hide">
+    <div class="login"><div class="card">
+      <h2 style="margin:0 0 6px;font-size:18px">Accès équipe</h2>
+      <p class="comp" style="margin:0 0 6px">Saisissez le code de l'équipe. Il est retenu sur ce téléphone.</p>
+      <div class="f hide" id="urlField"><label>Adresse du script Google (…/exec)</label><input type="text" id="urlIn" placeholder="https://script.google.com/macros/s/…/exec"></div>
+      <div class="f"><label>Code d'équipe</label><input type="text" id="codeIn" autocomplete="off" autocapitalize="off"></div>
+      <button class="btn p" id="loginBtn" style="width:100%;margin-top:14px">Entrer</button>
+      <div class="err" id="loginErr"></div>
+    </div></div>
+  </section>
+  <section id="listView" class="hide">
+    <button class="btn p" id="newBtn" style="width:100%;margin-bottom:10px">+ Nouvelle fiche</button>
+    <div class="tools"><input type="text" id="search" placeholder="Rechercher un client, une adresse…"><select id="filter"><option value="">Toutes</option><option>Brouillon</option><option>Signée</option><option>Terminée</option></select><button class="btn s" id="refreshBtn" title="Actualiser">↻</button></div>
+    <div class="card list" id="list"></div>
+    <p class="comp">Fiche obligatoire pour chaque chantier d'élagage (décret n° 2021-1833). À présenter à l'équipe, à garder sur le chantier, à conserver 2 ans.</p>
+  </section>
+  <section id="formView" class="hide"></section>
+</main>
+<div class="bar hide" id="bar">
+  <button class="btn s" id="pdfBtn">PDF</button>
+  <button class="btn p" id="saveBtn">Enregistrer</button>
+</div>
+<div class="sheet" id="pdfMenu"><div class="box">
+  <b>PDF de la fiche</b>
+  <button class="btn p" id="pdfDrive">Classer dans le Drive</button>
+  <button class="btn s" id="pdfDl">Télécharger sur ce téléphone</button>
+  <button class="btn l" id="pdfClose">Annuler</button>
+</div></div>
+<div class="busy" id="busy"><div class="spin"></div><div id="busyTxt">Patientez…</div></div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="box"><div id="mText"></div><div class="acts"><button class="btn s" id="mNo">Annuler</button><button class="btn p" id="mYes">OK</button></div></div></div>
+<script>
+const ENT = {
+  nom:"SARL Paysages des Olonnes", ville:"Grosbreuil (85440)", siret:"490 582 970 00029",
+  tel:"02 51 20 73 41", mail:"contact@paysagesdesolonnes.fr", site:"www.paysagesdesolonnes.fr",
+  assur:"MAAF (chantiers jusqu'à fin 2026 : MMA)", cog:["Julien Verré","Nicolas Courant"]
+};
+
+const S = [
+ {t:"Client et chantier", f:[
+  {k:"ref",l:"Référence de la fiche",ty:"text"},
+  {k:"client_nom",l:"Client (nom, prénom ou société)",ty:"text",req:1},
+  {k:"client_qualite",l:"Qualité",ty:"chips1",o:["Propriétaire","Locataire","Syndic","Collectivité","Entreprise"]},
+  {k:"client_tel",l:"Téléphone du client",ty:"tel"},
+  {k:"client_email",l:"E-mail du client",ty:"email"},
+  {k:"adresse",l:"Adresse du chantier",ty:"area",req:1},
+  {k:"gps",l:"Coordonnées GPS (facultatif)",ty:"text"},
+  {k:"devis",l:"N° de devis / commande",ty:"text"},
+  {k:"debut",l:"Début des travaux",ty:"dt",req:1},
+  {k:"fin",l:"Fin prévue",ty:"dt"},
+  {k:"horaires",l:"Horaires / délais particuliers",ty:"text"},
+  {k:"responsable",l:"Responsable sur le chantier",ty:"chips1",o:ENT.cog,req:1},
+  {k:"resp_tel",l:"Portable du responsable (en cas d'accident)",ty:"tel"}
+ ]},
+ {t:"Arbres et travaux", f:[
+  {k:"arbres",l:"Arbres à traiter",ty:"trees"},
+  {k:"types",l:"Type d'intervention",ty:"chips",o:["Élagage d'entretien","Élagage de formation","Réduction / suppression de branches","Ébranchage","Éhoupage","Démontage avec rétention","Démontage sans rétention","Abattage directionnel","Abattage non directionnel","Haubanage","Billonnage","Broyage","Évacuation des rémanents","Rognage / essouchage","Taille de haie"],req:1},
+  {k:"etat",l:"État sanitaire des arbres",ty:"chips",o:["Aucun problème visible","Bois mort / dépérissant","Problème d'enracinement","Champignon lignivore","Suie de l'érable","Chancre","Capricorne","Points d'ancrage fragilisés","Structure fragilisée"]},
+  {k:"etat_obs",l:"Observations (fissures, cavités, inclinaison…)",ty:"area"}
+ ]},
+ {t:"Schéma du chantier", f:[
+  {k:"schema",l:"Croquis ou photo annotée",ty:"sketch",help:"Prenez une photo du site puis dessinez dessus : arbres à abattre / à tailler, accès, zone de stockage et broyage, ligne électrique, point de rencontre des secours (PRS), zone de danger."},
+  {k:"schema_note",l:"Légende / précisions (accès, zones, point de couverture téléphonique…)",ty:"area"}
+ ]},
+ {t:"Réseaux et autorisations", f:[
+  {k:"reseaux",l:"Réseaux à proximité",ty:"chips",o:["Aucun réseau à proximité","Électrique BT","Électrique HTA","Électrique HTB","Télécom / fibre","Gaz","Eau","Réseaux enterrés (dessouchage)"],req:1},
+  {k:"reseau_dist",l:"Distance estimée aux réseaux",ty:"text"},
+  {k:"_info_res",ty:"info",h:"Distances minimales aux conducteurs nus : <b>BT 3 m · HTA 3 m · HTB 5 m</b>. DT-DICT obligatoire à moins de 50 m de conducteurs nus, en cas d'arrachage ou de tranchée : <b>reseaux-et-canalisations.ineris.fr</b>, au moins 15 jours avant."},
+  {k:"dtdict",l:"N° de DT-DICT",ty:"text"},
+  {k:"dtdict_date",l:"Date de la DT-DICT",ty:"date"},
+  {k:"res_mesures",l:"Mesures réseaux",ty:"chips",o:["Réponses des exploitants reçues, consignes appliquées","Consignation / mise hors tension demandée","AIPR des intervenants","Formulaire de découverte fortuite disponible"]},
+  {k:"autor",l:"Autorisations",ty:"chips",o:["Aucune autorisation nécessaire","Espace Boisé Classé – déclaration préalable","Arbre / haie protégé au PLU","Site classé / abords monument (ABF)","Arbre d'alignement","Arrachage de haie – guichet unique de la haie","Accord écrit du voisin"]},
+  {k:"autor_ref",l:"Référence / date de l'autorisation",ty:"text"},
+  {k:"nidif",l:"Biodiversité",ty:"chips",o:["Hors période de nidification (arrêté préfectoral)","Contrôle visuel : pas de nid ni de cavité occupée","Intervention en période : motif sécurité / urgence"]},
+  {k:"voirie",l:"Voie publique",ty:"chips",o:["Terrain privé uniquement","Empiètement – arrêté / permission de voirie obtenu","Signalisation temporaire en place"]}
+ ]},
+ {t:"Équipe et moyens", f:[
+  {k:"equipe",l:"Équipe présente",ty:"chips",o:ENT.cog},
+  {k:"equipe_autres",l:"Apprentis / autres intervenants (nom, formation, habilitations)",ty:"area"},
+  {k:"nb",l:"Nombre de travailleurs sur le chantier",ty:"num"},
+  {k:"elev",l:"Moyens d'élévation (privilégier les protections collectives)",ty:"chips",o:["Nacelle (PEMP) louée","PIRL","EPI de grimper","Échelle (accès uniquement)"]},
+  {k:"loueur",l:"Loueur nacelle / mini-pelle",ty:"text"},
+  {k:"coupe",l:"Matériels de coupe",ty:"chips",o:["Tronçonneuse élagueuse","Tronçonneuse abatteuse","Lamier d'élagage","Scie perche","Sécateur"]},
+  {k:"annexes",l:"Matériels annexes",ty:"chips",o:["Camion benne","Utilitaire","Broyeur","Essoucheuse / rogneuse","Treuil / câble","Mini-pelle louée","Souffleur"]},
+  {k:"verif",l:"Vérifications",ty:"chips",o:["EPI complets et en bon état","Matériel conforme et vérifié (VGP à jour)","Matériel de grimpe contrôlé","Dérogation apprentis mineurs à jour"]}
+ ]},
+ {t:"Risques et mesures", f:[
+  {k:"bio",l:"Risques biologiques",ty:"chips",o:["Aucun","Chenilles processionnaires","Frelons / hyménoptères","Berce du Caucase / ambroisie","Tiques","Suie de l'érable","Chancre du platane"]},
+  {k:"bio_mes",l:"Mesures biologiques",ty:"chips",o:["EPI appropriés","Appel à un spécialiste"]},
+  {k:"chantier_mes",l:"Mesures sur le chantier",ty:"chips",o:["Balisage externe (panneaux)","Balisage interne (homme de pied)","Zone de sécurité (2 × hauteur en abattage)","Rétention par cordes","Communication entre travailleurs","Surveillance de l'accès"]},
+  {k:"env",l:"Environnement",ty:"chips",o:["Routier","Météo","Bruit","Sol / pente","Éclairage","Poussières / vapeurs","Noyade","Co-activité","Machines (broyeur, rogneuse)","Projections"]},
+  {k:"env_mes",l:"Mesures environnement",ty:"chips",o:["Balisage voie publique","Horaires adaptés","Eau potable suffisante","Toilettes accessibles","Vêtements adaptés","Sifflet d'alarme","Équipement de flottaison","Plan de prévention donneur d'ordre"]},
+  {k:"orga",l:"Organisation",ty:"chips",o:["Tâches réparties dans le temps et l'espace","Consignes et notices des machines respectées","Mode de communication défini","Jamais de grimpeur seul"]},
+  {k:"meteo",l:"En cas de météo imprévue",ty:"chips",o:["Suivre la vigilance Météo-France","Sécuriser puis arrêter les travaux","Protéger les zones dangereuses","Prévenir le responsable"],def:["Suivre la vigilance Météo-France","Sécuriser puis arrêter les travaux","Protéger les zones dangereuses","Prévenir le responsable"]},
+  {k:"meteo_seuil",l:"Seuil d'arrêt (vent, orage…)",ty:"text"},
+  {k:"risques_autres",l:"Autres risques particuliers du site",ty:"area"}
+ ]},
+ {t:"Secours", f:[
+  {k:"_info_sec",ty:"info",h:"<b>15</b> SAMU · <b>18</b> Pompiers · <b>17</b> Police · <b>112</b> Urgences · <b>114</b> Sourds et malentendants<br><br><b>Protéger</b> : sécuriser, arrêter, baliser. <b>Alerter</b> : identité, lieu et accès, nature de l'accident, nombre et état des blessés, gestes en cours, rendez-vous au PRS – ne pas raccrocher le premier. <b>Secourir</b> : sans s'exposer, préparer l'accès ; ne pas déplacer la victime sans l'accord des secours."},
+  {k:"prs",l:"Point de rencontre des secours (PRS)",ty:"text",req:1},
+  {k:"trousse",l:"Trousse de secours",ty:"chips1",o:["Camion benne","Utilitaire","Autre"]},
+  {k:"secours",l:"Organisation",ty:"chips",o:["Kit d'urgence élagueur","Réseau téléphonique vérifié sur place","Véhicules dans le sens du départ","Voie d'accès laissée libre"]},
+  {k:"sst",l:"SST / grimpeur-sauveteur présent(s)",ty:"text"}
+ ]},
+ {t:"Déchets et engagements du client", f:[
+  {k:"dechets",l:"Déchets verts (brûlage interdit)",ty:"chips",o:["Broyat laissé sur place","Évacuation par l'entreprise","Bois de chauffage laissé","Souche laissée","Souche rognée","Souche arrachée"]},
+  {k:"bois",l:"Bois : longueur de coupe / lieu de stockage",ty:"text"},
+  {k:"engag",l:"Le client confirme",ty:"chips",o:["Propriétaire ou accord écrit du propriétaire","Accès et zone libérés (véhicules, mobilier, animaux)","Voisins informés","Réseaux enterrés connus signalés"]},
+  {k:"client_rem",l:"Remarques du client",ty:"area"}
+ ]},
+ {t:"Signatures avant travaux", f:[
+  {k:"sig_ent",l:"Chef d'entreprise / représentant",ty:"sig",req:1},
+  {k:"sig_client",l:"Client (lu et approuvé)",ty:"sig"},
+  {k:"equipe_sig",l:"Prise de connaissance par l'équipe",ty:"sigs"},
+  {k:"jourj",l:"Vérification sur place le jour J",ty:"chips1",o:["Conforme à la fiche","Fiche modifiée – équipe prévenue"]}
+ ]},
+ {t:"Fin de chantier", f:[
+  {k:"fin_date",l:"Date de fin des travaux",ty:"date"},
+  {k:"conforme",l:"Travaux",ty:"chips1",o:["Conformes au devis","Avec écarts"]},
+  {k:"nettoye",l:"Chantier nettoyé, déchets traités",ty:"chips1",o:["Oui","Non"]},
+  {k:"dommages",l:"Dommages constatés / écarts",ty:"area"},
+  {k:"reserves",l:"Réception",ty:"chips1",o:["Sans réserve","Avec réserves"]},
+  {k:"reserves_txt",l:"Réserves",ty:"area"},
+  {k:"sig_fin",l:"Signature du client à la réception",ty:"sig"}
+ ]}
+];
+
+
+/* ====== CONFIGURATION ====== */
+const API_URL = "COLLER_ICI_L_ADRESSE_DU_SCRIPT"; // adresse « /exec » du script Google
+
+let D={}, curId=null, curMaj="", curStatut="", RO=false, dirty=false, openSec=0, rows=[];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(m,ms=2800){const t=$("#toast");t.textContent=m;t.classList.add("v");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("v"),ms)}
+function ask(html,yes="OK"){return new Promise(r=>{$("#mText").innerHTML=html;$("#mYes").textContent=yes;$("#modal").classList.add("v");$("#mYes").onclick=()=>{$("#modal").classList.remove("v");r(true)};$("#mNo").onclick=()=>{$("#modal").classList.remove("v");r(false)}})}
+function busy(on,msg){$("#busy").classList.toggle("v",!!on);$("#busyTxt").textContent=msg||"Patientez…"}
+const LS="fiche-elagage-brouillon", LSC="fiche-elagage-code", LSU="fiche-elagage-url";
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+function apiUrl(){return API_URL.startsWith("http")?API_URL:(ls.get(LSU)||"")}
+async function api(action,payload={}){
+  const r=await fetch(apiUrl(),{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,code:ls.get(LSC)||"",...payload})});
+  const j=await r.json();
+  if(!j.ok){const e=new Error(j.error||"erreur");e.code=j.error;throw e}
+  return j;
+}
+function saveLocal(){ls.set(LS,JSON.stringify({id:curId,maj:curMaj,D}))}
+function newRef(){const d=new Date();const p=n=>String(n).padStart(2,"0");return "ELA-"+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"-"+Math.random().toString(36).slice(2,5).toUpperCase()}
+function blank(){const o={ref:newRef(),arbres:[{}],equipe_sig:[]};S.forEach(s=>s.f.forEach(f=>{if(f.def)o[f.k]=[...f.def]}));return o}
+function status(d){if(d.sig_fin)return"Terminée";if(d.sig_ent)return"Signée";return"Brouillon"}
+const badgeCls={"Terminée":"fin","Signée":"sig","Brouillon":""};
+function secDone(s){return s.f.filter(f=>f.req).every(f=>{const v=D[f.k];return Array.isArray(v)?v.length:!!v})}
+function show(v){["#loginView","#listView","#formView"].forEach(x=>$(x).classList.toggle("hide",x!==v));$("#bar").classList.toggle("hide",v!=="#formView");$("#backBtn").classList.toggle("hide",v!=="#formView");$("#outBtn").classList.toggle("hide",v!=="#listView");window.scrollTo(0,0)}
+
+/* ---------- CONNEXION ---------- */
+function showLogin(err){
+  show("#loginView");
+  $("#urlField").classList.toggle("hide",API_URL.startsWith("http"));
+  $("#loginErr").textContent=err||"";
+}
+$("#loginBtn").onclick=async()=>{
+  const c=$("#codeIn").value.trim();if(!c)return;
+  if(!API_URL.startsWith("http")){const u=$("#urlIn").value.trim();if(!u.startsWith("https://script.google.com/")){$("#loginErr").textContent="Adresse du script invalide.";return}ls.set(LSU,u)}
+  ls.set(LSC,c);busy(1,"Connexion…");
+  try{await loadList();busy(0);show("#listView")}catch(e){busy(0);ls.del(LSC);showLogin(e.code==="code"?"Code incorrect.":"Connexion impossible. Vérifiez le réseau.")}
+};
+$("#outBtn").onclick=()=>{ls.del(LSC);showLogin()};
+
+/* ---------- LISTE ---------- */
+async function loadList(){const j=await api("list");rows=j.rows||[];renderList()}
+function renderList(){
+  const L=$("#list");let h="";
+  let local=null;try{local=JSON.parse(ls.get(LS)||"null")}catch(e){}
+  if(local&&local.D&&(local.D.client_nom||local.D.adresse)){h+=`<div class="item" data-local="1"><div class="t"><b>${esc(local.D.client_nom||"Sans nom")}</b><span>Brouillon non envoyé, gardé sur ce téléphone</span></div><span class="badge warnb">À envoyer</span></div>`}
+  const q=($("#search").value||"").toLowerCase();
+  const f=$("#filter").value;
+  rows.filter(r=>(!f||r.statut===f)&&(!q||(r.client+" "+r.adresse+" "+r.ref).toLowerCase().includes(q))).forEach(r=>{
+    const when=r.debut?new Date(r.debut).toLocaleDateString("fr-FR"):"date à définir";
+    h+=`<div class="item" data-id="${esc(r.id)}"><div class="t"><b>${esc(r.client||"Sans nom")}</b><span>${esc(when)} · ${esc((r.adresse||"").split("\n")[0])}${r.pdf?" · PDF classé":""}</span></div><span class="badge ${badgeCls[r.statut]||""}">${esc(r.statut)}</span></div>`});
+  L.innerHTML=h||'<div class="empty">Aucune fiche. Créez la première avec « Nouvelle fiche ».</div>';
+  L.querySelectorAll(".item").forEach(el=>el.onclick=async()=>{
+    if(el.dataset.local){openForm(local.id,local.D,local.maj,"Brouillon");return}
+    busy(1,"Ouverture de la fiche…");
+    try{const j=await api("get",{id:el.dataset.id});busy(0);openForm(j.id,j.data,j.maj,j.statut)}catch(e){busy(0);errToast(e)}
+  });
+}
+$("#search").oninput=renderList;$("#filter").onchange=renderList;
+$("#refreshBtn").onclick=async()=>{busy(1,"Actualisation…");try{await loadList()}catch(e){errToast(e)}busy(0)};
+function errToast(e){if(e.code==="code"){ls.del(LSC);showLogin("Le code a changé : saisissez le nouveau code.");return}toast(e.code==="conflit"?"Fiche modifiée entre-temps par quelqu'un d'autre : rouvrez-la.":e.code==="terminee"?"Fiche terminée : elle n'est plus modifiable.":"Réseau indisponible ou erreur ("+(e.code||e.message)+")",4000)}
+
+/* ---------- FORMULAIRE ---------- */
+function openForm(id,data,maj,statut){
+  curId=id||null;D=data||blank();curMaj=maj||"";curStatut=statut||"Brouillon";RO=curStatut==="Terminée";dirty=false;openSec=RO?-1:0;
+  show("#formView");renderForm();
+}
+function renderForm(){
+  const F=$("#formView");F.classList.toggle("ro",RO);
+  let h=`<div class="info" style="margin:0 0 10px"><b>${ENT.nom}</b> – ${ENT.ville}<br>SIRET ${ENT.siret} · ${ENT.tel}<br>${ENT.mail} · Assurance : ${ENT.assur}</div>`;
+  if(RO)h+=`<div class="warn" style="margin:0 0 10px"><b>Fiche terminée</b> – consultation seule. Utilisez « PDF » pour la télécharger.</div>`;
+  else if(curStatut==="Signée")h+=`<div class="warn" style="margin:0 0 10px">Fiche signée, encore modifiable jusqu'à la réception des travaux (signature du client en fin de chantier).</div>`;
+  S.forEach((s,i)=>{h+=`<div class="card ${i===openSec?"open":""}" data-s="${i}"><div class="sec-h ${secDone(s)?"done":""}"><span class="n">${i+1}</span><h2>${s.t}</h2><span class="chev">›</span></div><div class="sec-b">${s.f.map(fieldHTML).join("")}</div></div>`});
+  if(curId&&!RO)h+=`<button class="btn l" id="delBtn" style="color:var(--red)">Supprimer cette fiche</button>`;
+  F.innerHTML=h;
+  F.querySelectorAll(".sec-h").forEach(el=>el.onclick=()=>{const c=el.parentElement;const was=c.classList.contains("open");F.querySelectorAll(".card").forEach(x=>x.classList.remove("open"));if(!was){c.classList.add("open");openSec=+c.dataset.s;initPads(c);setTimeout(()=>c.scrollIntoView({behavior:"smooth",block:"start"}),50)}else openSec=-1});
+  if(RO)F.querySelectorAll("input,textarea").forEach(x=>x.disabled=true);else bindFields(F);
+  const o=F.querySelector(".card.open");if(o)initPads(o);
+  const del=$("#delBtn");if(del)del.onclick=delFiche;
+  $("#saveBtn").classList.toggle("hide",RO);
+}
+function fieldHTML(f){
+  const v=D[f.k];
+  switch(f.ty){
+   case"info":return`<div class="info">${f.h}</div>`;
+   case"text":case"tel":case"email":case"date":case"num":case"dt":{const t={num:"number",dt:"datetime-local"}[f.ty]||f.ty;return`<div class="f"><label>${f.l}${f.req?" *":""}</label><input type="${t}" data-k="${f.k}" value="${esc(v)}"></div>`}
+   case"area":return`<div class="f"><label>${f.l}${f.req?" *":""}</label><textarea data-k="${f.k}">${esc(v)}</textarea></div>`;
+   case"chips":case"chips1":{const a=f.ty==="chips"?(v||[]):[v];return`<div class="f"><span class="lbl">${f.l}${f.req?" *":""}</span><div class="chips" data-k="${f.k}" data-one="${f.ty==="chips1"?1:""}">${f.o.map(o=>`<button type="button" class="chip ${a.includes(o)?"on":""}" data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>`}
+   case"trees":{const a=v&&v.length?v:[{}];return`<div class="f"><span class="lbl">${f.l}</span><div data-trees>${a.map((t,i)=>`<div class="row" data-i="${i}"><button class="del" type="button" data-deltree="${i}">×</button><div class="grid"><input type="text" placeholder="Essence" data-tk="essence" value="${esc(t.essence)}"><input type="text" placeholder="Hauteur (m)" data-tk="hauteur" value="${esc(t.hauteur)}"><input type="text" placeholder="Diamètre tronc" data-tk="diam" value="${esc(t.diam)}"><input type="text" placeholder="Emplacement" data-tk="lieu" value="${esc(t.lieu)}"></div><input type="text" style="margin-top:8px" placeholder="Travaux sur cet arbre" data-tk="travaux" value="${esc(t.travaux)}"></div>`).join("")}</div><button type="button" class="btn l" data-addtree>+ Ajouter un arbre</button></div>`}
+   case"sig":return`<div class="f"><span class="lbl">${f.l}${f.req?" *":""}</span><canvas class="pad" data-pad="${f.k}" height="160"></canvas><div class="padbar"><button type="button" class="btn s" data-clear="${f.k}">Effacer</button></div></div>`;
+   case"sketch":return`<div class="f"><span class="lbl">${f.l}</span><p class="comp" style="margin:0 0 8px">${f.help}</p><canvas class="pad" data-pad="${f.k}" data-sketch="1" height="320"></canvas><div class="padbar"><label class="btn s" style="font-size:13px;padding:7px 11px">📷 Photo<input type="file" accept="image/*" data-photo="${f.k}" hidden></label><button type="button" class="btn s" data-undo="${f.k}">Annuler le trait</button><button type="button" class="btn s" data-clear="${f.k}">Tout effacer</button></div></div>`;
+   case"sigs":{const a=v||[];return`<div class="f"><span class="lbl">${f.l}</span><div data-sigs>${a.map((s,i)=>`<div class="row"><button class="del" type="button" data-delsig="${i}">×</button><input type="text" placeholder="Nom de l'intervenant" data-sn="${i}" value="${esc(s.nom)}"><canvas class="pad" style="margin-top:8px" data-pad="equipe_sig.${i}" height="120"></canvas></div>`).join("")}</div><button type="button" class="btn l" data-addsig>+ Ajouter un intervenant</button></div>`}
+  }
+  return"";
+}
+function touch(){dirty=true;saveLocal();const c=document.querySelector(".card.open");if(c){c.querySelector(".sec-h").classList.toggle("done",secDone(S[+c.dataset.s]))}}
+function bindFields(F){
+  F.querySelectorAll("[data-k]").forEach(el=>{
+    if(el.classList.contains("chips")){el.onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=el.dataset.k,v=b.dataset.v;
+      if(el.dataset.one){D[k]=D[k]===v?"":v;el.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x.dataset.v===D[k]))}
+      else{const a=D[k]||[];D[k]=a.includes(v)?a.filter(x=>x!==v):[...a,v];b.classList.toggle("on")}touch()}}
+    else el.oninput=()=>{D[el.dataset.k]=el.value;touch()}});
+  F.querySelectorAll("[data-trees]").forEach(w=>{w.oninput=e=>{const r=e.target.closest(".row"),k=e.target.dataset.tk;if(!r||!k)return;D.arbres=D.arbres&&D.arbres.length?D.arbres:[{}];D.arbres[+r.dataset.i][k]=e.target.value;touch()}});
+  F.querySelectorAll("[data-deltree]").forEach(b=>b.onclick=()=>{D.arbres.splice(+b.dataset.deltree,1);if(!D.arbres.length)D.arbres=[{}];touch();renderForm()});
+  F.querySelectorAll("[data-addtree]").forEach(b=>b.onclick=()=>{D.arbres=(D.arbres&&D.arbres.length?D.arbres:[{}]);D.arbres.push({});touch();renderForm()});
+  F.querySelectorAll("[data-addsig]").forEach(b=>b.onclick=()=>{D.equipe_sig=D.equipe_sig||[];D.equipe_sig.push({nom:"",img:""});touch();renderForm()});
+  F.querySelectorAll("[data-delsig]").forEach(b=>b.onclick=()=>{D.equipe_sig.splice(+b.dataset.delsig,1);touch();renderForm()});
+  F.querySelectorAll("[data-sn]").forEach(i=>i.oninput=()=>{D.equipe_sig[+i.dataset.sn].nom=i.value;touch()});
+  F.querySelectorAll("[data-clear]").forEach(b=>b.onclick=()=>{const k=b.dataset.clear;setPad(k,"");if(k==="schema")D.schema_bg="";const c=F.querySelector(`[data-pad="${k}"]`);if(c){c._strokes=[];c._bg=null;c._saved=null;drawPad(c)}touch()});
+  F.querySelectorAll("[data-undo]").forEach(b=>b.onclick=()=>{const c=F.querySelector(`[data-pad="${b.dataset.undo}"]`);if(c&&c._strokes&&c._strokes.length){c._strokes.pop();drawPad(c);commitPad(c)}});
+  F.querySelectorAll("[data-photo]").forEach(inp=>inp.onchange=()=>{const file=inp.files[0];if(!file)return;const img=new Image();img.onload=()=>{const max=900,sc=Math.min(1,max/Math.max(img.width,img.height));const cv=document.createElement("canvas");cv.width=img.width*sc;cv.height=img.height*sc;cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);D.schema_bg=cv.toDataURL("image/jpeg",.6);const c=F.querySelector(`[data-pad="${inp.dataset.photo}"]`);c._strokes=[];loadBg(c,D.schema_bg,()=>commitPad(c));URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(file)});
+}
+function getPad(k){if(k.startsWith("equipe_sig.")){const i=+k.split(".")[1];return(D.equipe_sig[i]||{}).img}return D[k]}
+function setPad(k,v){if(k.startsWith("equipe_sig.")){const i=+k.split(".")[1];D.equipe_sig[i].img=v}else D[k]=v}
+function loadBg(c,src,cb){const im=new Image();im.onload=()=>{c._bg=im;fitCanvas(c);drawPad(c);cb&&cb()};im.src=src}
+function fitCanvas(c){const w=c.clientWidth||300;let h=+c.getAttribute("height");if(c.dataset.sketch&&c._bg)h=Math.round(w*c._bg.height/c._bg.width);c._w=w;c._h=h;const r=window.devicePixelRatio||1;c.width=w*r;c.height=h*r;c.style.height=h+"px";c.getContext("2d").setTransform(r,0,0,r,0,0)}
+function drawPad(c){const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c._w,c._h);if(c._bg)x.drawImage(c._bg,0,0,c._w,c._h);else if(c._saved)x.drawImage(c._saved,0,0,c._w,c._h);
+  x.lineCap="round";x.lineJoin="round";x.strokeStyle=c.dataset.sketch?"#d0221b":"#111";x.lineWidth=c.dataset.sketch?3:2.2;
+  (c._strokes||[]).forEach(s=>{x.beginPath();s.forEach((p,i)=>i?x.lineTo(p[0]*c._w,p[1]*c._h):x.moveTo(p[0]*c._w,p[1]*c._h));if(s.length===1)x.lineTo(s[0][0]*c._w+.1,s[0][1]*c._h);x.stroke()})}
+function commitPad(c){const k=c.dataset.pad;const out=document.createElement("canvas");const W=c.dataset.sketch?900:500;out.width=W;out.height=Math.round(W*c._h/c._w);out.getContext("2d").drawImage(c,0,0,out.width,out.height);setPad(k,out.toDataURL("image/jpeg",c.dataset.sketch?.6:.5));touch()}
+function initPads(scope){scope.querySelectorAll("canvas.pad").forEach(c=>{if(c._init)return;c._init=1;c._strokes=[];
+  const k=c.dataset.pad,v=getPad(k);
+  const start=()=>{fitCanvas(c);drawPad(c)};
+  if(v){const im=new Image();im.onload=()=>{if(c.dataset.sketch)c._bg=im;else c._saved=im;start()};im.src=v;start()}
+  else if(c.dataset.sketch&&D.schema_bg)loadBg(c,D.schema_bg);else start();
+  if(RO)return;
+  let cur=null;
+  const pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
+  c.onpointerdown=e=>{e.preventDefault();c.setPointerCapture(e.pointerId);cur=[pt(e)];c._strokes.push(cur);drawPad(c)};
+  c.onpointermove=e=>{if(!cur)return;e.preventDefault();cur.push(pt(e));drawPad(c)};
+  c.onpointerup=c.onpointercancel=()=>{if(!cur)return;cur=null;commitPad(c)};
+})}
+
+/* ---------- ENREGISTRER ---------- */
+async function save(){
+  if(!D.client_nom){toast("Indiquez au moins le nom du client");return}
+  const wasDone=curStatut==="Terminée";const willBeDone=status(D)==="Terminée";
+  if(willBeDone&&!wasDone&&!(await ask("La signature de réception est faite : la fiche sera <b>terminée</b> et ne pourra plus être modifiée. Son PDF sera classé dans le Drive. Continuer ?","Terminer")))return;
+  busy(1,"Enregistrement…");
+  try{
+    const j=await api("save",{id:curId,baseMaj:curMaj,data:D});
+    curId=j.id;curMaj=j.maj;curStatut=j.statut;dirty=false;ls.del(LS);
+    if(curStatut==="Terminée"){busy(1,"Classement du PDF dans le Drive…");await sendPdf(true)}
+    busy(0);toast("Fiche enregistrée ✓");RO=curStatut==="Terminée";renderForm();loadList().catch(()=>{});
+  }catch(e){busy(0);saveLocal();if(e.code==="conflit"||e.code==="terminee"||e.code==="code")errToast(e);else toast("Pas de réseau : la fiche est gardée sur ce téléphone. Réessayez plus tard.",4500)}
+}
+async function delFiche(){if(!await ask("Supprimer définitivement cette fiche ?","Supprimer"))return;busy(1);try{await api("delete",{id:curId});ls.del(LS);busy(0);toast("Fiche supprimée");await loadList();show("#listView")}catch(e){busy(0);errToast(e)}}
+
+/* ---------- PDF ---------- */
+function clean(s){return String(s??"").replace(/[✓☐→📷]/g,"").replace(/[‘’]/g,"'")}
+function pdfName(){return `${(D.debut||"").slice(0,10)||"sans-date"}_${clean(D.client_nom||"client").replace(/[^\wÀ-ÿ-]+/g,"-")}_${clean(D.ref||"")}.pdf`}
+function buildPdf(){
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});
+  const W=210,M=14,CW=W-2*M;let y=M;
+  const need=h=>{if(y+h>285){doc.addPage();y=M}};
+  const txt=(t,size=9.5,style="normal",color=[29,36,32])=>{doc.setFont("helvetica",style);doc.setFontSize(size);doc.setTextColor(...color);doc.splitTextToSize(clean(t),CW).forEach(l=>{need(size*.45);doc.text(l,M,y);y+=size*.45})};
+  doc.setFillColor(47,107,58);doc.rect(0,0,W,24,"F");doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text("Fiche d'intervention - chantier d'élagage / abattage",M,10);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`${ENT.nom} - ${ENT.ville} - SIRET ${ENT.siret} - ${ENT.tel}`,M,16);doc.text(`${ENT.mail} - Assurance : ${ENT.assur} - Réf. ${clean(D.ref||"")} - Statut : ${status(D)}`,M,20.5);y=31;
+  const fmtDT=v=>{if(!v)return"";const d=new Date(v);return isNaN(d)?v:d.toLocaleString("fr-FR",v.length>10?{dateStyle:"short",timeStyle:"short"}:{dateStyle:"short"})};
+  S.forEach((s,si)=>{
+    need(14);y+=2;doc.setFillColor(232,241,233);doc.rect(M,y-4.5,CW,7,"F");txt(`${si+1}. ${s.t}`,11,"bold",[47,107,58]);y+=1.5;
+    s.f.forEach(f=>{
+      const v=D[f.k];
+      if(f.ty==="info"){if(f.k==="_info_sec")txt("Urgences : 15 SAMU - 18 Pompiers - 17 Police - 112 - 114. Protéger, alerter, secourir.",8.5,"italic",[90,90,90]);return}
+      if(f.ty==="trees"){const a=(v||[]).filter(t=>Object.values(t).some(Boolean));txt(f.l+" :",9.5,"bold");if(!a.length)txt("-");a.forEach((t,i)=>txt(`${i+1}. ${[t.essence,t.hauteur&&("h. "+t.hauteur),t.diam&&("diam. "+t.diam),t.lieu,t.travaux].filter(Boolean).join(" - ")}`));y+=1;return}
+      if(f.ty==="sig"||f.ty==="sketch"){txt(f.l+" :",9.5,"bold");if(v){const p=doc.getImageProperties(v);const w=f.ty==="sketch"?CW:60;let h=w*p.height/p.width;if(h>200){h=200}const ww=h*p.width/p.height;need(h+2);doc.addImage(v,"JPEG",M,y,ww,h);doc.setDrawColor(200);doc.rect(M,y,ww,h);y+=h+3}else{need(14);doc.setDrawColor(200);doc.rect(M,y,60,12);y+=15}return}
+      if(f.ty==="sigs"){txt(f.l+" :",9.5,"bold");const a=v||[];if(!a.length)txt("-");let x=M,rowH=0;a.forEach(s2=>{if(x+45>W-M){x=M;y+=rowH+2;rowH=0}need(28);doc.setFontSize(8.5);doc.setTextColor(29,36,32);doc.text(clean(s2.nom||"(nom)"),x,y+3);if(s2.img){const p=doc.getImageProperties(s2.img);const h=42*p.height/p.width;doc.addImage(s2.img,"JPEG",x,y+4.5,42,h);rowH=Math.max(rowH,h+6)}else rowH=Math.max(rowH,8);x+=46});y+=rowH+2;return}
+      const out=Array.isArray(v)?v.join(", "):(f.ty==="dt"||f.ty==="date")?fmtDT(v):v;
+      need(5);doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.setTextColor(29,36,32);const lab=clean(f.l)+" : ";const lw=doc.getTextWidth(lab);
+      doc.setFont("helvetica","normal");const lines=doc.splitTextToSize(clean(out||"-"),CW-lw);doc.setFont("helvetica","bold");doc.text(lab,M,y);doc.setFont("helvetica","normal");lines.forEach((l,i)=>{if(i){y+=4.3;need(4.3)}doc.text(l,M+lw,y)});y+=4.8;
+    });
+  });
+  y+=3;txt("Fiche établie selon le décret n° 2021-1833 (modèle MSA). À présenter à l'équipe, à conserver sur le chantier puis 2 ans après signature.",8,"italic",[110,110,110]);
+  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(140);doc.text(`${ENT.nom} - ${clean(D.ref||"")} - page ${i}/${n}`,M,292)}
+  return doc;
+}
+async function sendPdf(silent){
+  if(!curId){toast("Enregistrez d'abord la fiche");return}
+  const b64=buildPdf().output("datauristring").split(",")[1];
+  const j=await api("pdf",{id:curId,name:pdfName(),b64});
+  if(!silent)toast("PDF classé dans le Drive ✓");
+  return j;
+}
+async function pdfMenu(){
+  if(!window.jspdf){toast("Module PDF non chargé : vérifiez le réseau");return}
+  $("#pdfMenu").classList.add("v");
+}
+$("#pdfDl").onclick=()=>{$("#pdfMenu").classList.remove("v");const blob=buildPdf().output("blob");const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=pdfName();document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)};
+$("#pdfDrive").onclick=async()=>{$("#pdfMenu").classList.remove("v");if(dirty&&!RO){toast("Enregistrez d'abord vos modifications");return}busy(1,"Envoi du PDF dans le Drive…");try{await sendPdf();busy(0)}catch(e){busy(0);errToast(e)}};
+$("#pdfClose").onclick=()=>$("#pdfMenu").classList.remove("v");
+
+/* ---------- DÉMARRAGE ---------- */
+$("#newBtn").onclick=()=>openForm(null,null,"","Brouillon");
+$("#backBtn").onclick=async()=>{if(dirty&&!RO&&!(await ask("Les modifications ne sont pas enregistrées dans le Sheet. Elles restent en brouillon sur ce téléphone. Revenir à la liste ?","Revenir")))return;show("#listView");renderList()};
+$("#saveBtn").onclick=save;$("#pdfBtn").onclick=pdfMenu;
+window.addEventListener("resize",()=>document.querySelectorAll("canvas.pad").forEach(c=>{if(c._init){fitCanvas(c);drawPad(c)}}));
+(async()=>{
+  if(!apiUrl()||!ls.get(LSC)){showLogin();return}
+  show("#listView");$("#list").innerHTML='<div class="empty">Chargement des fiches…</div>';
+  try{await loadList()}catch(e){if(e.code==="code")showLogin("Code incorrect ou modifié.");else{$("#list").innerHTML="";renderList();toast("Pas de réseau : liste indisponible",4000)}}
+})();
+
+</script>
+</body>
+</html>
